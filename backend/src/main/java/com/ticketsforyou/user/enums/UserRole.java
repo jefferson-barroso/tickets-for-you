@@ -1,4 +1,4 @@
-package com.ticketsforyou.domain.user;
+package com.ticketsforyou.user.enums;
 
 public enum UserRole {
     ORGANIZADOR,

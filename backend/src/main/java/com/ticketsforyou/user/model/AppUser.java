@@ -1,5 +1,6 @@
-package com.ticketsforyou.domain.user;
+package com.ticketsforyou.user.model;
 
+import com.ticketsforyou.user.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,6 +1,8 @@
-package com.ticketsforyou.domain.event;
+package com.ticketsforyou.event.model;
 
-import com.ticketsforyou.domain.user.AppUser;
+import com.ticketsforyou.user.model.AppUser;
+import com.ticketsforyou.event.enums.EventStatus;
+import com.ticketsforyou.event.enums.EventType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

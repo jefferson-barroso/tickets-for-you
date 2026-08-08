@@ -1,4 +1,4 @@
-package com.ticketsforyou.domain.event;
+package com.ticketsforyou.event.enums;
 
 public enum EventType {
     SHOW,

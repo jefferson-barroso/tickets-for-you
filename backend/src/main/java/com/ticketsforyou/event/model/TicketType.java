@@ -1,4 +1,4 @@
-package com.ticketsforyou.domain.event;
+package com.ticketsforyou.event.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
