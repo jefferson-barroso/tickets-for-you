@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: tickets-for-you-api
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/tickets_for_you}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+  flyway:
+    enabled: true
+
+server:
+  port: 8080
