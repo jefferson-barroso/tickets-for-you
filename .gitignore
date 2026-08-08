@@ -1,0 +1,15 @@
+# IntelliJ
+.idea/
+*.iml
+
+# Java e Maven
+**/target/
+
+# Variáveis locais
+.env
+.env.*
+!.env.example
+
+# Sistema
+.DS_Store
+Thumbs.db
