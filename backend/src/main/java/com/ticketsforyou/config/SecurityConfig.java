@@ -58,6 +58,10 @@ public class SecurityConfig {
                                 HttpMethod.GET,
                                 "/api/v1/tickets/me"
                         ).hasRole("CLIENTE")
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/v1/gate/validate-ticket"
+                        ).hasRole("PORTARIA")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(

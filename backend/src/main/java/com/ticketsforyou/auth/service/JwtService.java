@@ -13,6 +13,7 @@ import java.util.Date;
 import io.jsonwebtoken.JwtException;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.util.UUID;
+import io.jsonwebtoken.Claims;
 
 @Service
 public class JwtService {
@@ -67,5 +68,19 @@ public class JwtService {
                 .claim("type", "TICKET")
                 .signWith(getSigningKey())
                 .compact();
+    }
+
+    public UUID extractTicketCode(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        if (!"TICKET".equals(claims.get("type", String.class))) {
+            throw new JwtException("Token não representa um ingresso");
+        }
+
+        return UUID.fromString(claims.getSubject());
     }
 }
