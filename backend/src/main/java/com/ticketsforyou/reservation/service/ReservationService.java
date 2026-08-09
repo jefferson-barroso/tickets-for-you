@@ -22,7 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.ticketsforyou.reservation.dto.PaymentResponse;
 import com.ticketsforyou.reservation.dto.ProcessPaymentRequest;
 import com.ticketsforyou.ticket.service.TicketIssuanceService;
-
+import org.springframework.beans.factory.annotation.Value;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.Comparator;
@@ -38,6 +38,8 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final ReservationItemRepository reservationItemRepository;
     private final TicketIssuanceService ticketIssuanceService;
+    @Value("${reservation.hold-minutes}")
+    private long holdMinutes;
 
     @Transactional
     public ReservationResponse createReservation(
@@ -94,7 +96,9 @@ public class ReservationService {
         reservation.setEvent(event);
         reservation.setStatus(ReservationStatus.AGUARDANDO_PAGAMENTO);
         reservation.setTotalAmount(totalAmount);
-        reservation.setExpiresAt(OffsetDateTime.now().plusMinutes(15));
+        reservation.setExpiresAt(
+                OffsetDateTime.now().plusMinutes(holdMinutes)
+        );
 
         Reservation savedReservation = reservationRepository.save(reservation);
 
@@ -251,5 +255,39 @@ public class ReservationService {
                     ticketType.getAvailableQuantity() + reservationItem.getQuantity()
             );
         }
+    }
+
+    @Transactional
+    public int expirePendingReservations() {
+        List<UUID> reservationIds = reservationRepository
+                .findByStatusAndExpiresAtBefore(
+                        ReservationStatus.AGUARDANDO_PAGAMENTO,
+                        OffsetDateTime.now()
+                )
+                .stream()
+                .map(Reservation::getId)
+                .toList();
+
+        int expiredReservations = 0;
+
+        for (UUID reservationId : reservationIds) {
+            Reservation reservation = reservationRepository
+                    .findByIdForUpdate(reservationId)
+                    .orElse(null);
+
+            if (
+                    reservation == null ||
+                            reservation.getStatus() != ReservationStatus.AGUARDANDO_PAGAMENTO ||
+                            reservation.getExpiresAt().isAfter(OffsetDateTime.now())
+            ) {
+                continue;
+            }
+
+            restoreStock(reservation);
+            reservation.setStatus(ReservationStatus.EXPIRADA);
+            expiredReservations++;
+        }
+
+        return expiredReservations;
     }
 }

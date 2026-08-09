@@ -7,6 +7,9 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import java.util.Optional;
+import com.ticketsforyou.reservation.enums.ReservationStatus;
+import java.time.OffsetDateTime;
+import java.util.List;
 
 import java.util.UUID;
 
@@ -14,4 +17,9 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT reservation FROM Reservation reservation WHERE reservation.id = :id")
     Optional<Reservation> findByIdForUpdate(@Param("id") UUID id);
+
+    List<Reservation> findByStatusAndExpiresAtBefore(
+            ReservationStatus status,
+            OffsetDateTime expiresAt
+    );
 }

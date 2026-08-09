@@ -29,3 +29,7 @@ app:
 tmdb:
   base-url: https://api.themoviedb.org/3
   access-token: ${TMDB_ACCESS_TOKEN}
+
+reservation:
+  hold-minutes: ${RESERVATION_HOLD_MINUTES:15}
+  expiration-check-ms: ${RESERVATION_EXPIRATION_CHECK_MS:60000}
