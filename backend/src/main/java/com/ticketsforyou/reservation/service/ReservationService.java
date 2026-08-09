@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import com.ticketsforyou.reservation.dto.PaymentResponse;
 import com.ticketsforyou.reservation.dto.ProcessPaymentRequest;
+import com.ticketsforyou.ticket.service.TicketIssuanceService;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -36,6 +37,7 @@ public class ReservationService {
     private final TicketTypeRepository ticketTypeRepository;
     private final ReservationRepository reservationRepository;
     private final ReservationItemRepository reservationItemRepository;
+    private final TicketIssuanceService ticketIssuanceService;
 
     @Transactional
     public ReservationResponse createReservation(
@@ -223,6 +225,7 @@ public class ReservationService {
 
         if (request.approved()) {
             reservation.setStatus(ReservationStatus.PAGA);
+            ticketIssuanceService.issueTickets(reservation);
         } else {
             restoreStock(reservation);
             reservation.setStatus(ReservationStatus.PAGAMENTO_RECUSADO);

@@ -54,6 +54,10 @@ public class SecurityConfig {
                                 HttpMethod.PATCH,
                                 "/api/v1/reservations/*/payment"
                         ).hasRole("CLIENTE")
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/tickets/me"
+                        ).hasRole("CLIENTE")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(

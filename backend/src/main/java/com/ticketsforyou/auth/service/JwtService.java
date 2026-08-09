@@ -12,6 +12,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import io.jsonwebtoken.JwtException;
 import org.springframework.security.core.userdetails.UserDetails;
+import java.util.UUID;
 
 @Service
 public class JwtService {
@@ -58,5 +59,13 @@ public class JwtService {
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public String generateTicketToken(UUID ticketCode) {
+        return Jwts.builder()
+                .subject(ticketCode.toString())
+                .claim("type", "TICKET")
+                .signWith(getSigningKey())
+                .compact();
     }
 }
