@@ -5,8 +5,11 @@ import {
   ShieldCheck,
   Ticket,
 } from 'lucide-react'
+import { EventCard } from './features/events/EventCard'
+import { usePublishedEvents } from './features/events/usePublishedEvents'
 
 function App() {
+  const { events, isLoading, error } = usePublishedEvents()
   return (
     <div className="min-h-screen bg-stone-950 text-stone-100">
       <a
@@ -168,15 +171,39 @@ function App() {
         <section id="eventos" className="mx-auto max-w-7xl px-6 py-20">
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
-              <p className="font-semibold text- t4u-primary">EM BREVE</p>
+              <p className="font-semibold text-t4u-primary">EM CARTAZ</p>
               <h2 className="mt-2 text-3xl font-black text-white">
                 Eventos em destaque
               </h2>
             </div>
 
             <p className="max-w-md text-stone-400">
-              futura area da API.
+              Escolha sua próxima experiência e garanta seu lugar.
             </p>
+          </div>
+
+          {isLoading && (
+            <p className="mt-10 text-stone-400" role="status">
+              Carregando eventos...
+            </p>
+          )}
+
+          {error && (
+            <p className="mt-10 rounded-xl border border-red-400/30 bg-red-400/10 p-4 text-red-200" role="alert">
+              {error}
+            </p>
+          )}
+
+          {!isLoading && !error && events.length === 0 && (
+            <p className="mt-10 text-stone-400">
+              Nenhum evento publicado no momento.
+            </p>
+          )}
+
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {events.map((event) => (
+              <EventCard key={event.id} event={event} />
+            ))}
           </div>
         </section>
       </main>
