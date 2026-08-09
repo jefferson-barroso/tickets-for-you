@@ -46,6 +46,10 @@ public class SecurityConfig {
                                 HttpMethod.PATCH,
                                 "/api/v1/events/*/publish"
                         ).hasRole("ORGANIZADOR")
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/v1/reservations"
+                        ).hasRole("CLIENTE")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(
