@@ -9,6 +9,12 @@ import com.ticketsforyou.event.repository.TicketTypeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.ticketsforyou.event.dto.CreateEventRequest;
+import com.ticketsforyou.event.dto.CreateTicketTypeRequest;
+import com.ticketsforyou.event.model.TicketType;
+import com.ticketsforyou.user.model.AppUser;
+import com.ticketsforyou.user.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -19,6 +25,7 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final TicketTypeRepository ticketTypeRepository;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public List<EventSummaryResponse> listPublishedEvents() {
@@ -45,5 +52,50 @@ public class EventService {
                 startingPrice,
                 event.getStatus()
         );
+    }
+
+    @Transactional
+    public EventSummaryResponse createEvent(
+            CreateEventRequest request,
+            String organizerEmail
+    ) {
+        AppUser organizer = userRepository.findByEmail(organizerEmail)
+                .orElseThrow(() -> new EntityNotFoundException("Organizador não encontrado"));
+
+        Event event = new Event();
+        event.setOrganizer(organizer);
+        event.setTitle(request.title());
+        event.setDescription(request.description());
+        event.setEventType(request.eventType());
+        event.setStartsAt(request.startsAt());
+        event.setVenueName(request.venueName());
+        event.setVenueAddress(request.venueAddress());
+        event.setPosterUrl(request.posterUrl());
+        event.setStatus(EventStatus.RASCUNHO);
+
+        Event savedEvent = eventRepository.save(event);
+
+        List<TicketType> ticketTypes = request.ticketTypes()
+                .stream()
+                .map(ticketRequest -> createTicketType(savedEvent, ticketRequest))
+                .toList();
+
+        ticketTypeRepository.saveAll(ticketTypes);
+
+        return toSummaryResponse(savedEvent);
+    }
+
+    private TicketType createTicketType(
+            Event event,
+            CreateTicketTypeRequest request
+    ) {
+        TicketType ticketType = new TicketType();
+        ticketType.setEvent(event);
+        ticketType.setName(request.name());
+        ticketType.setPrice(request.price());
+        ticketType.setTotalQuantity(request.totalQuantity());
+        ticketType.setAvailableQuantity(request.totalQuantity());
+
+        return ticketType;
     }
 }
