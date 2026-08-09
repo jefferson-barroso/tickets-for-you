@@ -8,6 +8,7 @@ import LoginPage from './pages/LoginPage'
 import MyTicketsPage from './pages/MyTicketsPage'
 import PaymentPage from './pages/PaymentPage'
 import SharedTicketPage from './pages/SharedTicketPage'
+import OrganizerPage from './pages/OrganizerPage'
 
 function App() {
   return (
@@ -42,6 +43,15 @@ function App() {
         element={
           <RequireRole allowedRoles={['PORTARIA']}>
             <GateValidationPage />
+          </RequireRole>
+        }
+      />
+
+      <Route
+        path="/organizer"
+        element={
+          <RequireRole allowedRoles={['ORGANIZADOR']}>
+            <OrganizerPage />
           </RequireRole>
         }
       />

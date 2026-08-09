@@ -87,6 +87,16 @@ function HomePage() {
                                 </Link>
                             )}
 
+                            {user.role === 'ORGANIZADOR' && (
+                                <Link
+                                    to="/organizer"
+                                    className="inline-flex items-center gap-2 rounded-full border border-t4u-primary/70 px-4 py-2 text-sm font-semibold text-t4u-primary transition hover:bg-t4u-primary hover:text-stone-950"
+                                >
+                                    <UserRound size={17} aria-hidden="true" />
+                                    Organizar eventos
+                                </Link>
+                            )}
+
                             <button
                                 type="button"
                                 onClick={handleLogout}
