@@ -70,6 +70,10 @@ public class SecurityConfig {
                                 HttpMethod.GET,
                                 "/api/v1/tickets/shared/**"
                         ).permitAll()
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/catalog/**"
+                        ).hasRole("ORGANIZADOR")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(
