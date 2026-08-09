@@ -1,15 +1,26 @@
 import {
     ArrowRight,
     CalendarDays,
+    LogOut,
+    ScanLine,
     Search,
     ShieldCheck,
     Ticket,
+    UserRound,
 } from 'lucide-react'
 import { EventCard } from '../features/events/EventCard'
 import { usePublishedEvents } from '../features/events/usePublishedEvents'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../features/auth/AuthContext'
 
 function HomePage() {
+    const { user, logout } = useAuth()
+    const navigate = useNavigate()
+
+    function handleLogout() {
+        logout()
+        navigate('/')
+    }
     const { events, isLoading, error } = usePublishedEvents()
     return (
         <div className="min-h-screen bg-stone-950 text-stone-100">
@@ -54,12 +65,45 @@ function HomePage() {
                         </ul>
                     </nav>
 
-                    <Link
-                        to="/login"
-                        className="rounded-full border border-t4u-primary/70 px-4 py-2 text-sm font-semibold text-t4u-secondary transition hover:bg-t4u-primary hover:text-stone-950 focus:outline-none focus:ring-2 focus:ring-t4u-primary focus:ring-offset-2 focus:ring-offset-stone-950"
-                    >
-                        Entrar
-                    </Link>
+                    {user ? (
+                        <div className="flex items-center gap-3">
+                            {user.role === 'CLIENTE' && (
+                                <Link
+                                    to="/tickets"
+                                    className="inline-flex items-center gap-2 rounded-full border border-t4u-primary/70 px-4 py-2 text-sm font-semibold text-t4u-primary transition hover:bg-t4u-primary hover:text-stone-950"
+                                >
+                                    <UserRound size={17} aria-hidden="true" />
+                                    Meus ingressos
+                                </Link>
+                            )}
+
+                            {user.role === 'PORTARIA' && (
+                                <Link
+                                    to="/gate"
+                                    className="inline-flex items-center gap-2 rounded-full border border-t4u-primary/70 px-4 py-2 text-sm font-semibold text-t4u-primary transition hover:bg-t4u-primary hover:text-stone-950"
+                                >
+                                    <ScanLine size={17} aria-hidden="true" />
+                                    Portaria
+                                </Link>
+                            )}
+
+                            <button
+                                type="button"
+                                onClick={handleLogout}
+                                className="inline-flex items-center gap-2 rounded-full bg-t4u-primary px-4 py-2 text-sm font-semibold text-stone-950 transition hover:bg-t4u-secondary"
+                            >
+                                <LogOut size={17} aria-hidden="true" />
+                                Sair
+                            </button>
+                        </div>
+                    ) : (
+                        <Link
+                            to="/login"
+                            className="rounded-full border border-t4u-primary/70 px-4 py-2 text-sm font-semibold text-t4u-secondary transition hover:bg-t4u-primary hover:text-stone-950 focus:outline-none focus:ring-2 focus:ring-t4u-primary focus:ring-offset-2 focus:ring-offset-stone-950"
+                        >
+                            Entrar
+                        </Link>
+                    )}
                 </div>
             </header>
 
@@ -76,7 +120,7 @@ function HomePage() {
 
                             <h1 className="max-w-3xl text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl">
                                 Encontre o seu lugar na próxima{' '}
-                                <span className="text- t4u-primary">história.</span>
+                                <span className="text-t4u-primary">história.</span>
                             </h1>
 
                             <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-300">
@@ -135,7 +179,7 @@ function HomePage() {
                 <section id="como-funciona" className="bg-stone-900/70 py-20">
                     <div className="mx-auto max-w-7xl px-6">
                         <div className="max-w-2xl">
-                            <p className="font-semibold text- t4u-primary">SIMPLIFICAMOS A JORNADA</p>
+                            <p className="font-semibold text-t4u-primary">SIMPLIFICAMOS A JORNADA</p>
                             <h2 className="mt-3 text-3xl font-black text-white">
                                 Da descoberta à entrada, sem complicação.
                             </h2>
@@ -143,7 +187,7 @@ function HomePage() {
 
                         <div className="mt-10 grid gap-5 md:grid-cols-3">
                             <article className="rounded-2xl border border-white/10 bg-stone-950 p-6">
-                                <Search className="text- t4u-primary" aria-hidden="true" />
+                                <Search className="text-t4u-primary" aria-hidden="true" />
                                 <h3 className="mt-5 text-xl font-bold">Descubra</h3>
                                 <p className="mt-2 leading-7 text-stone-400">
                                     Encontre eventos, confira local, data, setores e valores.
@@ -151,7 +195,7 @@ function HomePage() {
                             </article>
 
                             <article className="rounded-2xl border border-white/10 bg-stone-950 p-6">
-                                <CalendarDays className="text- t4u-primary" aria-hidden="true" />
+                                <CalendarDays className="text-t4u-primary" aria-hidden="true" />
                                 <h3 className="mt-5 text-xl font-bold">Reserve</h3>
                                 <p className="mt-2 leading-7 text-stone-400">
                                     Selecione seus ingressos com estoque atualizado e pagamento simulado.
@@ -159,7 +203,7 @@ function HomePage() {
                             </article>
 
                             <article id="seguranca" className="rounded-2xl border border-white/10 bg-stone-950 p-6">
-                                <ShieldCheck className="text- t4u-primary" aria-hidden="true" />
+                                <ShieldCheck className="text-t4u-primary" aria-hidden="true" />
                                 <h3 className="mt-5 text-xl font-bold">Aproveite</h3>
                                 <p className="mt-2 leading-7 text-stone-400">
                                     Acesse seu ingresso digital e entre com QR Code seguro.

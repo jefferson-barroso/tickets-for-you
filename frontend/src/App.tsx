@@ -1,10 +1,12 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 
+import { RequireRole } from './features/auth/RequireRole'
 import EventDetailsPage from './pages/EventDetailsPage'
+import GateValidationPage from './pages/GateValidationPage'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
-import PaymentPage from './pages/PaymentPage'
 import MyTicketsPage from './pages/MyTicketsPage'
+import PaymentPage from './pages/PaymentPage'
 import SharedTicketPage from './pages/SharedTicketPage'
 
 function App() {
@@ -14,16 +16,38 @@ function App() {
       <Route path="/Homepage" element={<Navigate to="/" replace />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/events/:eventId" element={<EventDetailsPage />} />
+
       <Route
         path="/reservations/:reservationId/payment"
-        element={<PaymentPage />}
+        element={
+          <RequireRole allowedRoles={['CLIENTE']}>
+            <PaymentPage />
+          </RequireRole>
+        }
       />
-      <Route path="/tickets" element={<MyTicketsPage />} />
-      <Route path="/tickets/shared/:token" element={<SharedTicketPage />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
 
+      <Route
+        path="/tickets"
+        element={
+          <RequireRole allowedRoles={['CLIENTE']}>
+            <MyTicketsPage />
+          </RequireRole>
+        }
+      />
+
+      <Route path="/tickets/shared/:token" element={<SharedTicketPage />} />
+
+      <Route
+        path="/gate"
+        element={
+          <RequireRole allowedRoles={['PORTARIA']}>
+            <GateValidationPage />
+          </RequireRole>
+        }
+      />
+
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
-    
   )
 }
 
