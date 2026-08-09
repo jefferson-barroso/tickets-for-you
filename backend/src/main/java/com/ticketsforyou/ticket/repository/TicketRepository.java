@@ -37,4 +37,6 @@ public interface TicketRepository extends JpaRepository<Ticket, UUID> {
     Optional<Ticket> findByTicketCodeForUpdate(
             @Param("ticketCode") UUID ticketCode
     );
+
+    Optional<Ticket> findByIdAndCustomerEmail(UUID id, String customerEmail);
 }

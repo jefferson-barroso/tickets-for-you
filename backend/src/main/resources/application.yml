@@ -22,3 +22,6 @@ security:
   jwt:
     secret: ${JWT_SECRET:tickets-for-you-local-development-secret-2026}
     expiration-minutes: 120
+
+app:
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}

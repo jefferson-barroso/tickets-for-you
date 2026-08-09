@@ -62,6 +62,14 @@ public class SecurityConfig {
                                 HttpMethod.POST,
                                 "/api/v1/gate/validate-ticket"
                         ).hasRole("PORTARIA")
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/v1/tickets/*/share"
+                        ).hasRole("CLIENTE")
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/tickets/shared/**"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(

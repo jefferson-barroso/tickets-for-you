@@ -9,6 +9,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.ticketsforyou.ticket.dto.SharedTicketResponse;
+import com.ticketsforyou.ticket.dto.TicketShareLinkResponse;
+import com.ticketsforyou.ticket.service.TicketShareService;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+
+import java.util.UUID;
 
 import java.util.List;
 
@@ -19,6 +26,7 @@ import java.util.List;
 public class TicketController {
 
     private final TicketService ticketService;
+    private final TicketShareService ticketShareService;
 
     @GetMapping("/me")
     @Operation(summary = "Lista os ingressos do cliente autenticado")
@@ -26,5 +34,25 @@ public class TicketController {
             Authentication authentication
     ) {
         return ticketService.listMyTickets(authentication.getName());
+    }
+
+    @PostMapping("/{ticketId}/share")
+    @Operation(summary = "Gera um link temporário para compartilhar ingresso")
+    public TicketShareLinkResponse createShareLink(
+            @PathVariable UUID ticketId,
+            Authentication authentication
+    ) {
+        return ticketShareService.createShareLink(
+                ticketId,
+                authentication.getName()
+        );
+    }
+
+    @GetMapping("/shared/{token}")
+    @Operation(summary = "Consulta um ingresso compartilhado por link")
+    public SharedTicketResponse getSharedTicket(
+            @PathVariable String token
+    ) {
+        return ticketShareService.getSharedTicket(token);
     }
 }
