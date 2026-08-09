@@ -42,6 +42,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/events/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/events").hasRole("ORGANIZADOR")
+                        .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/v1/events/*/publish"
+                        ).hasRole("ORGANIZADOR")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(

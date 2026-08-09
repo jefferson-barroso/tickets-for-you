@@ -16,6 +16,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import java.util.List;
+import com.ticketsforyou.event.dto.EventDetailResponse;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import java.util.UUID;
 
 @Tag(name = "Eventos", description = "Consulta e gerenciamento de eventos")
 @RestController
@@ -38,5 +42,22 @@ public class EventController {
             Authentication authentication
     ) {
         return eventService.createEvent(request, authentication.getName());
+    }
+
+    @GetMapping("/{eventId}")
+    @Operation(summary = "Busca os detalhes de um evento publicado")
+    public EventDetailResponse getPublishedEvent(
+            @PathVariable UUID eventId
+    ) {
+        return eventService.getPublishedEvent(eventId);
+    }
+
+    @PatchMapping("/{eventId}/publish")
+    @Operation(summary = "Publica um evento em rascunho", description = "Exclusivo para o organizador proprietário.")
+    public EventSummaryResponse publishEvent(
+            @PathVariable UUID eventId,
+            Authentication authentication
+    ) {
+        return eventService.publishEvent(eventId, authentication.getName());
     }
 }
