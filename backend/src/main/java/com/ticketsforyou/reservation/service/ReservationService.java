@@ -19,6 +19,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import com.ticketsforyou.reservation.dto.PaymentResponse;
+import com.ticketsforyou.reservation.dto.ProcessPaymentRequest;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -181,5 +183,70 @@ public class ReservationService {
                     return item;
                 })
                 .toList();
+    }
+    @Transactional
+    public PaymentResponse processPayment(
+            UUID reservationId,
+            String customerEmail,
+            ProcessPaymentRequest request
+    ) {
+        Reservation reservation = reservationRepository
+                .findByIdForUpdate(reservationId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Reserva não encontrada"
+                ));
+
+        if (!reservation.getCustomer().getEmail().equals(customerEmail)) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Esta reserva não pertence ao cliente autenticado"
+            );
+        }
+
+        if (reservation.getStatus() != ReservationStatus.AGUARDANDO_PAGAMENTO) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Esta reserva não está aguardando pagamento"
+            );
+        }
+
+        if (reservation.getExpiresAt().isBefore(OffsetDateTime.now())) {
+            restoreStock(reservation);
+            reservation.setStatus(ReservationStatus.EXPIRADA);
+
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "O prazo para pagamento desta reserva expirou"
+            );
+        }
+
+        if (request.approved()) {
+            reservation.setStatus(ReservationStatus.PAGA);
+        } else {
+            restoreStock(reservation);
+            reservation.setStatus(ReservationStatus.PAGAMENTO_RECUSADO);
+        }
+
+        return new PaymentResponse(
+                reservation.getId(),
+                reservation.getStatus(),
+                reservation.getTotalAmount()
+        );
+    }
+
+    private void restoreStock(Reservation reservation) {
+        List<ReservationItem> reservationItems = reservationItemRepository
+                .findByReservationId(reservation.getId());
+
+        for (ReservationItem reservationItem : reservationItems) {
+            TicketType ticketType = ticketTypeRepository
+                    .findByIdForUpdate(reservationItem.getTicketType().getId())
+                    .orElseThrow();
+
+            ticketType.setAvailableQuantity(
+                    ticketType.getAvailableQuantity() + reservationItem.getQuantity()
+            );
+        }
     }
 }

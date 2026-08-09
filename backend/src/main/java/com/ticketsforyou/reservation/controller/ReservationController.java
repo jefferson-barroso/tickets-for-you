@@ -10,6 +10,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import com.ticketsforyou.reservation.dto.PaymentResponse;
+import com.ticketsforyou.reservation.dto.ProcessPaymentRequest;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/reservations")
@@ -27,6 +32,20 @@ public class ReservationController {
             Authentication authentication
     ) {
         return reservationService.createReservation(
+                authentication.getName(),
+                request
+        );
+    }
+
+    @PatchMapping("/{reservationId}/payment")
+    @Operation(summary = "Processa um pagamento simulado")
+    public PaymentResponse processPayment(
+            @PathVariable UUID reservationId,
+            @Valid @RequestBody ProcessPaymentRequest request,
+            Authentication authentication
+    ) {
+        return reservationService.processPayment(
+                reservationId,
                 authentication.getName(),
                 request
         );
