@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@theme {
+  --color-t4u-primary: #ffa900;
+  --color-t4u-secondary: #ff8400;
+  --color-t4u-dark: #0c0a09;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--color-t4u-dark);
+}
+
+:focus-visible {
+  outline: 3px solid #ffa900;
+  outline-offset: 3px;
+}
