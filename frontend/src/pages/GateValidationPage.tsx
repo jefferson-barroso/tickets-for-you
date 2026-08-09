@@ -3,10 +3,12 @@ import {
   CircleX,
   ClipboardCheck,
   LoaderCircle,
-  ScanLine,
+  ScanLine, Camera,
+  CameraOff,
 } from 'lucide-react'
 import { FormEvent, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Scanner } from '@yudiel/react-qr-scanner'
 
 import { apiFetch } from '../api/client'
 
@@ -30,6 +32,8 @@ export default function GateValidationPage() {
   const [result, setResult] = useState<ValidationResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isScannerOpen, setIsScannerOpen] = useState(false)
+  const [scannerError, setScannerError] = useState<string | null>(null)
 
   useEffect(() => {
     async function loadEvents() {
@@ -47,6 +51,16 @@ export default function GateValidationPage() {
 
     loadEvents()
   }, [])
+
+  function handleScan(codes: { rawValue: string }[]) {
+    const scannedValue = codes[0]?.rawValue
+
+    if (!scannedValue) return
+
+    setQrPayload(scannedValue)
+    setIsScannerOpen(false)
+    setScannerError(null)
+  }
 
   async function validateTicket(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -132,6 +146,61 @@ export default function GateValidationPage() {
             className="mt-2 w-full resize-none rounded-xl border border-white/15 bg-stone-950 px-4 py-3 text-sm text-white outline-none placeholder:text-stone-500 focus:border-t4u-primary"
           />
 
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={() => {
+                setIsScannerOpen((current) => !current)
+                setScannerError(null)
+              }}
+              className="inline-flex items-center gap-2 rounded-xl border border-t4u-primary/60 px-4 py-3 font-bold text-t4u-primary hover:bg-t4u-primary hover:text-stone-950"
+            >
+              {isScannerOpen ? (
+                <>
+                  <CameraOff size={19} aria-hidden="true" />
+                  Fechar câmera
+                </>
+              ) : (
+                <>
+                  <Camera size={19} aria-hidden="true" />
+                  Ler QR Code pela câmera
+                </>
+              )}
+            </button>
+
+            {isScannerOpen && (
+              <div className="mt-4 overflow-hidden rounded-2xl border border-t4u-primary/40 bg-black">
+                <Scanner
+                  onScan={handleScan}
+                  onError={(error) =>
+                    setScannerError(
+                      error.message || 'Não foi possível acessar a câmera.',
+                    )
+                  }
+                  formats={['qr_code']}
+                  constraints={{
+                    facingMode: 'environment',
+                  }}
+                  components={{
+                    finder: true,
+                    onOff: true,
+                    torch: true,
+                  }}
+                />
+
+                <p className="border-t border-white/10 p-3 text-center text-sm text-stone-300">
+                  Posicione o QR Code dentro da área destacada.
+                </p>
+              </div>
+            )}
+
+            {scannerError && (
+              <p role="alert" className="mt-3 text-sm text-red-300">
+                {scannerError}
+              </p>
+            )}
+          </div>
+
           <button
             type="submit"
             disabled={isLoading || !eventId || !qrPayload.trim()}
@@ -163,11 +232,10 @@ export default function GateValidationPage() {
         {result && (
           <section
             aria-live="polite"
-            className={`mt-6 rounded-3xl border p-6 ${
-              isValid
+            className={`mt-6 rounded-3xl border p-6 ${isValid
                 ? 'border-emerald-400/40 bg-emerald-950/40'
                 : 'border-red-400/40 bg-red-950/40'
-            }`}
+              }`}
           >
             <div className="flex items-center gap-3">
               {isValid ? (
