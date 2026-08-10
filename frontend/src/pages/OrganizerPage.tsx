@@ -48,20 +48,40 @@ export default function OrganizerPage() {
             totalQuantity: '100',
         },
     ])
-
     const [createdEvent, setCreatedEvent] = useState<CreatedEvent | null>(null)
     const [isSearching, setIsSearching] = useState(false)
     const [isCreating, setIsCreating] = useState(false)
     const [isPublishing, setIsPublishing] = useState(false)
     const [error, setError] = useState<string | null>(null)
-
     const eventFormRef = useRef<HTMLElement>(null)
+    const [eventType, setEventType] = useState<'FILME' | 'SHOW'>('FILME')
 
     const minDateTime = new Date(Date.now() + 5 * 60 * 1000)
         .toISOString()
         .slice(0, 16)
 
     const maxDateTime = '2100-12-31T23:59'
+
+    function selectEventType(type: 'FILME' | 'SHOW') {
+        setEventType(type)
+        setCreatedEvent(null)
+
+        if (type === 'SHOW') {
+            setSelectedMovie(null)
+            setMovies([])
+            setQuery('')
+            setTitle('')
+            setDescription('')
+            setPosterUrl('')
+
+            requestAnimationFrame(() => {
+                eventFormRef.current?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start',
+                })
+            })
+        }
+    }
 
     async function searchMovies(event: FormEvent<HTMLFormElement>) {
         event.preventDefault()
@@ -164,7 +184,7 @@ export default function OrganizerPage() {
                 body: JSON.stringify({
                     title,
                     description,
-                    eventType: 'FILME',
+                    eventType: eventType,
                     startsAt: new Date(startsAt).toISOString(),
                     venueName,
                     venueAddress,
@@ -241,105 +261,157 @@ export default function OrganizerPage() {
                     </p>
                 </header>
 
-                <form
-                    onSubmit={searchMovies}
-                    className="mt-8 flex flex-col gap-3 sm:flex-row"
-                >
-                    <label htmlFor="movie-search" className="sr-only">
-                        Buscar filme
-                    </label>
+                <fieldset className="mt-8 rounded-2xl border border-white/10 bg-stone-900 p-5">
+                    <legend className="px-2 font-black text-t4u-primary">
+                        Qual evento deseja cadastrar?
+                    </legend>
 
-                    <input
-                        id="movie-search"
-                        value={query}
-                        onChange={(event) => setQuery(event.target.value)}
-                        placeholder="Ex.: De Volta para o Futuro"
-                        className="min-w-0 flex-1 rounded-xl border border-white/15 bg-stone-900 px-4 py-3 text-white outline-none placeholder:text-stone-500 focus:border-t4u-primary"
-                    />
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                        <label
+                            className={`cursor-pointer rounded-xl border p-4 transition ${eventType === 'FILME'
+                                ? 'border-t4u-primary bg-t4u-primary/10'
+                                : 'border-white/10 hover:border-t4u-primary/50'
+                                }`}
+                        >
+                            <input
+                                type="radio"
+                                name="eventType"
+                                value="FILME"
+                                checked={eventType === 'FILME'}
+                                onChange={() => selectEventType('FILME')}
+                                className="accent-t4u-primary"
+                            />
+                            <span className="ml-3 font-black">Filme</span>
+                            <span className="mt-2 block text-sm text-stone-300">
+                                Consulte o catálogo TMDb e aproveite as informações do filme.
+                            </span>
+                        </label>
 
-                    <button
-                        type="submit"
-                        disabled={isSearching}
-                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-t4u-primary px-5 py-3 font-black text-stone-950 hover:bg-t4u-secondary disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        {isSearching ? (
-                            <>
-                                <LoaderCircle className="animate-spin" aria-hidden="true" />
-                                Buscando...
-                            </>
-                        ) : (
-                            <>
-                                <Search aria-hidden="true" />
-                                Buscar
-                            </>
+                        <label
+                            className={`cursor-pointer rounded-xl border p-4 transition ${eventType === 'SHOW'
+                                ? 'border-t4u-primary bg-t4u-primary/10'
+                                : 'border-white/10 hover:border-t4u-primary/50'
+                                }`}
+                        >
+                            <input
+                                type="radio"
+                                name="eventType"
+                                value="SHOW"
+                                checked={eventType === 'SHOW'}
+                                onChange={() => selectEventType('SHOW')}
+                                className="accent-t4u-primary"
+                            />
+                            <span className="ml-3 font-black">Show</span>
+                            <span className="mt-2 block text-sm text-stone-300">
+                                Cadastre manualmente o artista, local, data e setores.
+                            </span>
+                        </label>
+                    </div>
+                </fieldset>
+                {eventType === 'FILME' && (
+                    <>
+                        <form
+                            onSubmit={searchMovies}
+                            className="mt-8 flex flex-col gap-3 sm:flex-row"
+                        >
+                            <label htmlFor="movie-search" className="sr-only">
+                                Buscar filme
+                            </label>
+
+                            <input
+                                id="movie-search"
+                                value={query}
+                                onChange={(event) => setQuery(event.target.value)}
+                                placeholder="Ex.: De Volta para o Futuro"
+                                className="min-w-0 flex-1 rounded-xl border border-white/15 bg-stone-900 px-4 py-3 text-white outline-none placeholder:text-stone-500 focus:border-t4u-primary"
+                            />
+
+                            <button
+                                type="submit"
+                                disabled={isSearching}
+                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-t4u-primary px-5 py-3 font-black text-stone-950 hover:bg-t4u-secondary disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                {isSearching ? (
+                                    <>
+                                        <LoaderCircle className="animate-spin" aria-hidden="true" />
+                                        Buscando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Search aria-hidden="true" />
+                                        Buscar
+                                    </>
+                                )}
+                            </button>
+                        </form>
+
+                        {error && (
+                            <p
+                                role="alert"
+                                className="mt-6 rounded-2xl border border-red-400/30 bg-red-950/40 p-5 text-red-100"
+                            >
+                                {error}
+                            </p>
                         )}
-                    </button>
-                </form>
 
-                {error && (
-                    <p
-                        role="alert"
-                        className="mt-6 rounded-2xl border border-red-400/30 bg-red-950/40 p-5 text-red-100"
-                    >
-                        {error}
-                    </p>
-                )}
+                        {movies.length > 0 && (
+                            <section className="mt-10">
+                                <h2 className="text-2xl font-black">Resultados do catálogo</h2>
 
-                {movies.length > 0 && (
-                    <section className="mt-10">
-                        <h2 className="text-2xl font-black">Resultados do catálogo</h2>
-
-                        <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                            {movies.map((movie) => (
-                                <button
-                                    key={movie.id}
-                                    type="button"
-                                    onClick={() => selectMovie(movie)}
-                                    className={`overflow-hidden rounded-2xl border text-left transition ${selectedMovie?.id === movie.id
-                                        ? 'border-t4u-primary ring-2 ring-t4u-primary/50'
-                                        : 'border-white/10 hover:border-t4u-primary/60'
-                                        }`}
-                                >
-                                    <div className="aspect-[2/3] bg-stone-900">
-                                        {movie.posterUrl ? (
-                                            <img
-                                                src={movie.posterUrl}
-                                                alt={`Pôster do filme ${movie.title}`}
-                                                className="h-full w-full object-cover"
-                                            />
-                                        ) : (
-                                            <div className="grid h-full place-items-center">
-                                                <Film
-                                                    size={54}
-                                                    className="text-t4u-primary"
-                                                    aria-hidden="true"
-                                                />
+                                <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                                    {movies.map((movie) => (
+                                        <button
+                                            key={movie.id}
+                                            type="button"
+                                            onClick={() => selectMovie(movie)}
+                                            className={`overflow-hidden rounded-2xl border text-left transition ${selectedMovie?.id === movie.id
+                                                ? 'border-t4u-primary ring-2 ring-t4u-primary/50'
+                                                : 'border-white/10 hover:border-t4u-primary/60'
+                                                }`}
+                                        >
+                                            <div className="aspect-[2/3] bg-stone-900">
+                                                {movie.posterUrl ? (
+                                                    <img
+                                                        src={movie.posterUrl}
+                                                        alt={`Pôster do filme ${movie.title}`}
+                                                        className="h-full w-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="grid h-full place-items-center">
+                                                        <Film
+                                                            size={54}
+                                                            className="text-t4u-primary"
+                                                            aria-hidden="true"
+                                                        />
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
-                                    </div>
 
-                                    <div className="bg-stone-900 p-4">
-                                        <h3 className="font-black">{movie.title}</h3>
-                                        {movie.releaseDate && (
-                                            <p className="mt-1 text-sm text-stone-400">
-                                                Lançamento: {movie.releaseDate}
-                                            </p>
-                                        )}
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
-                    </section>
+                                            <div className="bg-stone-900 p-4">
+                                                <h3 className="font-black">{movie.title}</h3>
+                                                {movie.releaseDate && (
+                                                    <p className="mt-1 text-sm text-stone-400">
+                                                        Lançamento: {movie.releaseDate}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+                    </>
                 )}
-
-                {selectedMovie && (
+                {(eventType === 'SHOW' || selectedMovie) && (
                     <section
                         ref={eventFormRef}
                         className="mt-10 scroll-mt-6 rounded-3xl border border-white/10 bg-stone-900 p-6 sm:p-8"
                     >
                         <p className="font-bold text-t4u-primary">Dados do evento</p>
                         <h2 className="mt-2 text-2xl font-black">
-                            Criar sessão de cinema
+                            {eventType === 'FILME'
+                                ? 'Criar sessão de cinema'
+                                : 'Cadastrar show'}
                         </h2>
 
                         <form onSubmit={createEvent} className="mt-7 grid gap-5">
@@ -410,7 +482,7 @@ export default function OrganizerPage() {
                                         required
                                         value={venueName}
                                         onChange={(event) => setVenueName(event.target.value)}
-                                        placeholder="Ex.: Cine T4U"
+                                        placeholder={eventType === 'FILME' ? 'Ex.: Cine T4U' : 'Ex.: Arena T4U'}
                                         className="mt-2 w-full rounded-xl border border-white/15 bg-stone-950 px-4 py-3 outline-none focus:border-t4u-primary"
                                     />
                                 </div>
@@ -557,6 +629,7 @@ export default function OrganizerPage() {
                                 )}
                             </button>
                         </form>
+
 
                         {createdEvent && (
                             <div
