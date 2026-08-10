@@ -7,7 +7,7 @@ import {
     Send,
     Trash2,
 } from 'lucide-react'
-import { FormEvent, useRef, useState } from 'react'
+import {type FormEvent, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 import { apiFetch } from '../api/client'

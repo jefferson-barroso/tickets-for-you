@@ -6,7 +6,7 @@ import {
   ScanLine, Camera,
   CameraOff,
 } from 'lucide-react'
-import { FormEvent, useEffect, useState } from 'react'
+import { type FormEvent, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Scanner } from '@yudiel/react-qr-scanner'
 import { toast } from 'sonner'
