@@ -1,9 +1,19 @@
 Caros(as) recrutadores(as), é com prazer que apresento:
+![Logo T4U](./frontend/public/logo.png)
 # TicketsForYou (T4U)
 Plataforma de eventos e venda de ingressos desenvolvida para o Desafio Elite Dev 2026.
 
 O sistema permite que organizadores criem e publiquem eventos, clientes reservem e paguem ingressos, e operadores de portaria validem entradas por QR Code ou código digitado.
 
+---
+## Aplicação publicada
+
+- Frontend: `https://tickets-for-you.vercel.app`
+- API: `https://tickets-for-you-api.onrender.com`
+- Swagger: `https://tickets-for-you-api.onrender.com/swagger-ui/index.html`
+- Health check: `https://tickets-for-you-api.onrender.com/actuator/health`
+---
+# BACKEND: 
 ## Funcionalidades implementadas
 
 - Autenticação JWT com três perfis: Organizador, Cliente e Portaria.
@@ -39,7 +49,7 @@ O sistema permite que organizadores criem e publiquem eventos, clientes reservem
 ```text
 tickets-for-you/
 ├── backend/              # API Spring Boot
-├── frontend/             # Aplicação React (em desenvolvimento)
+├── frontend/             # Aplicação React
 ├── docs/                 # Documentação técnica
 ├── docker-compose.yml    # PostgreSQL local
 └── README.md
@@ -137,6 +147,7 @@ T4U@2026
 | POST | `/api/v1/tickets/{id}/share` | Cliente |
 | GET | `/api/v1/tickets/shared/{token}` | Público |
 | POST | `/api/v1/gate/validate-ticket` | Portaria |
+| PATCH | `/api/v1/tickets/{id}/cancel` | Cliente |
 
 ## Fluxo de teste sugerido
 
@@ -151,25 +162,127 @@ T4U@2026
 9. Valide o `qrPayload` de um ingresso.
 10. Valide novamente o mesmo payload e confirme o retorno `JA_UTILIZADO`.
 
-## Decisões técnicas
+---
+# FRONTEND:
+## Tecnologias
 
-A primeira versão utiliza ingressos por quantidade e setor, em vez de mapa de assentos numerados. Essa escolha atende ao desafio e permite garantir estoque transacional sem ampliar excessivamente o escopo.
+- React 19
+- TypeScript
+- Vite
+- Tailwind CSS 4
+- React Router
+- Lucide React
+- Sonner
+- qrcode.react
+- @yudiel/react-qr-scanner
 
-O QR não contém apenas um ID simples: ele usa um token JWT assinado pelo backend. A portaria valida assinatura, ingresso, evento e status antes de liberar a entrada.
+## Organização
 
-## Uso de IA
+O frontend segue uma estrutura orientada a funcionalidades:
 
-A IA foi utilizada como parceira para discutir arquitetura, estruturar documentação, revisar decisões técnicas e orientar a implementação incremental.
+```text
+frontend/src/
+├── api/                    # Cliente HTTP centralizado
+├── components/
+│   └── accessibility/      # Painel de acessibilidade global
+├── features/
+│   ├── auth/               # Contexto, tipos e proteção de rotas
+│   └── events/             # Tipos, cards, listagem e carrossel
+├── pages/                  # Páginas da aplicação
+└── App.tsx                 # Rotas principais
+````
+## Rotas da Aplicação
 
-As decisões de produto e arquitetura foram tomadas durante o desenvolvimento, incluindo:
+| Rota | Finalidade | Acesso |
+| :--- | :--- | :--- |
+| `/` | Home, destaques e listagem de eventos | Público |
+| `/login` | Autenticação | Público |
+| `/events/:eventId` | Detalhes e reserva de evento | Público |
+| `/reservations/:reservationId/payment` | Pagamento simulado | Cliente |
+| `/tickets` | Carteira de ingressos | Cliente |
+| `/tickets/shared/:token` | Ingresso compartilhado | Público |
+| `/gate` | Validação de ingressos | Portaria |
+| `/organizer` | Criação e publicação de eventos | Organizador |
 
-- Organização por funcionalidade.
-- Uso de PostgreSQL e Flyway.
-- Venda por setores na primeira versão.
-- Enums de domínio em português.
-- Fluxo de reserva com lock pessimista.
-- QR Code assinado e validação única na portaria.
+> **Nota:** As rotas protegidas utilizam o componente `RequireRole`. Essa proteção melhora a experiência visual, enquanto a autorização definitiva é aplicada de forma segura no backend pelo Spring Security.
 
-A implementação foi acompanhada, executada e testada manualmente no ambiente local por mim.
+## Jornadas Implementadas
 
-PS: Visando a organização e o atendimento dos demais requisitos solicitados, deixo, dentro da pasta `/docs`, outros arquivos que explicam com detalhes: o fluxo da api, a arquitetura e as decisões tomadas para a construção desde desafio.
+### Cliente
+* Consulta eventos e utiliza busca por texto, tipo e data.
+* Visualiza detalhes, setores e estoque.
+* Cria uma reserva.
+* Simula pagamento (aprovado ou negado).
+* Consulta a carteira de ingressos.
+* Visualiza o QR Code do ingresso.
+* Gera link temporário de compartilhamento de ingresso.
+* Cancela ingresso emitido, devolvendo automaticamente uma unidade ao estoque.
+
+### Organizador
+* Escolhe entre cadastrar **Filme** ou **Show**.
+* Para filmes, realiza consulta ao catálogo externo (TMDb).
+* Define data, local, pôster e setores.
+* Cria o evento como rascunho.
+* Publica o evento para venda ao público.
+
+### Portaria
+* Seleciona o evento correspondente.
+* Lê o QR Code utilizando a câmera ou inserindo o código manualmente.
+* Recebe o resultado da validação na hora.
+* Registra a entrada no sistema somente quando o ingresso for válido.
+
+
+## Destaques e Descoberta de Eventos
+
+A **Home** foi desenvolvida pensando na melhor experiência de descoberta:
+* Carrossel de eventos publicados em destaque;
+* Troca automática de banners com controles de avançar, voltar e pausar;
+* Busca por título, local ou endereço;
+* Filtros rápidos por tipo (Filme ou Show) e data;
+* Indicação clara da quantidade de eventos encontrados na busca.
+
+
+## Feedback Visual
+
+A aplicação utiliza a biblioteca **Sonner** para exibir notificações breves (toast) de sucesso, aviso e erro, como:
+* Login realizado;
+* Reserva criada;
+* Pagamento aprovado ou negado;
+* Ingresso cancelado;
+* Link de compartilhamento copiado;
+* Evento criado ou publicado;
+* Entrada autorizada ou recusada na portaria.
+
+
+## Acessibilidade
+
+Como incremento ao desafio, foi implementado um **painel global e persistente de acessibilidade**, contendo os seguintes recursos:
+* Aumento e redução do tamanho do texto;
+* Modo de alto contraste;
+* Redução de animações;
+* Persistência das preferências do usuário no `localStorage`;
+* Foco visível (outline) para navegação via teclado;
+* Link de atalho para "pular diretamente ao conteúdo principal";
+* Uso correto de `labels`, mensagens `aria-live`, botões semânticos e controles de carrossel acessíveis;
+* Alternativa manual (input de texto) para leitura de QR Code caso a câmera do dispositivo não esteja disponível.
+
+
+## Identidade Visual
+
+A interface utiliza a seguinte paleta de cores principal:
+* **Primária:** `#ffa900`
+* **Secundária:** `#ff8400`
+* **Fundo escuro:** `#0c0a09`
+
+> *A escolha do laranja está associada à energia, entusiasmo, criatividade e é um ótimo convite à ação (Call to Action). O contraste com o fundo escuro busca transmitir aconchego e conforto visual, garantindo que o foco e o destaque fiquem nas ações importantes como reserva, compra e confirmação.*
+
+
+
+## Configuração Local
+
+1. Crie um arquivo `.env` na raiz da pasta `frontend`:
+```env
+VITE_API_URL=http://localhost:8080/api/v1
+```
+---
+#### PS: Visando a organização e o atendimento dos demais requisitos solicitados, deixo, dentro da pasta `/docs`, outros arquivos que explicam com detalhes: o fluxo da api, a arquitetura e as decisões tomadas para a construção deste desafio.

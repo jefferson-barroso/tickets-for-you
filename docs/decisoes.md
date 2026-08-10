@@ -1,4 +1,7 @@
-# Decisões arquiteturais
+# Decisões 
+
+---
+# Backend:
 
 ## ADR-001 - Monorepositório
 
@@ -47,3 +50,53 @@ JWT é usado tanto na autenticação da API quanto no payload assinado do QR Cod
 O pagamento recebe um resultado controlado de aprovação ou recusa.
 
 **Motivo:** atende ao desafio sem integração financeira real e permite testar os dois cenários.
+
+--- 
+# Frontend:
+## ADR-009 - React, Vite e Tailwind CSS
+
+O frontend usa React com TypeScript, Vite e Tailwind CSS.
+
+**Motivo:** React permite construir fluxos interativos por componentes; TypeScript melhora a segurança dos contratos com a API; Vite oferece build rápido; e Tailwind facilita consistência visual responsiva.
+
+## ADR-010 - Proteção de rotas por perfil
+
+O frontend usa rotas protegidas por papel com `RequireRole`.
+
+**Motivo:** evita apresentar interfaces inadequadas para cada tipo de usuário. A validação definitiva continua centralizada no backend.
+
+## ADR-011 - Acessibilidade persistente
+
+Foi criado um painel de acessibilidade com ajuste de fonte, alto contraste e redução de animações, salvo no navegador.
+
+**Motivo:** ampliar a inclusão e demonstrar preocupação com diferentes necessidades de uso, sem depender de serviços externos.
+
+## ADR-012 - Feedback com toast
+
+A aplicação utiliza notificações breves para confirmar ações importantes.
+
+**Motivo:** dar retorno imediato ao usuário sem interromper seu fluxo de navegação.
+
+## ADR-013 - Deploy separado
+
+O frontend é hospedado no Vercel e a API Spring Boot com PostgreSQL é hospedada no Render.
+
+**Motivo:** o Vercel é adequado para aplicações estáticas React, enquanto o Render oferece execução Docker para Java e banco PostgreSQL gerenciado.
+
+---
+## Uso de IA
+
+A IA (Codex) foi utilizada como parceira para discutir arquitetura, estruturar documentação, revisar decisões técnicas e orientar a implementação incremental.
+
+As decisões de produto e arquitetura foram tomadas durante o desenvolvimento, incluindo:
+
+- Organização por funcionalidade.
+- Uso de PostgreSQL e Flyway.
+- Venda por setores na primeira versão.
+- Enums de domínio em português.
+- Fluxo de reserva com lock pessimista.
+- QR Code assinado e validação única na portaria.
+
+A implementação foi acompanhada, executada e testada manualmente no ambiente local por mim.
+
+Algumas partes do código  criadas por mim: Arquitetura do backend, CRUD User, CRUD Events, LoginScreen, PaymentPage e etc. Além da identidade visual do site.
