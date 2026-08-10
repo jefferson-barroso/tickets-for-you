@@ -9,9 +9,11 @@ import MyTicketsPage from './pages/MyTicketsPage'
 import PaymentPage from './pages/PaymentPage'
 import SharedTicketPage from './pages/SharedTicketPage'
 import OrganizerPage from './pages/OrganizerPage'
+import { AccessibilityToolbar } from './components/acessibility/AccessibilityToolbar'
 
 function App() {
   return (
+     <>
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/Homepage" element={<Navigate to="/" replace />} />
@@ -55,9 +57,13 @@ function App() {
           </RequireRole>
         }
       />
+      
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    <AccessibilityToolbar />
+
+    </>
   )
 }
 

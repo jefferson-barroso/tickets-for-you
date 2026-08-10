@@ -20,3 +20,52 @@ body {
   outline: 3px solid #ffa900;
   outline-offset: 3px;
 }
+
+:root {
+  --t4u-font-scale: 1;
+}
+
+html {
+  font-size: calc(16px * var(--t4u-font-scale));
+}
+
+html[data-reduce-motion='true'] *,
+html[data-reduce-motion='true'] *::before,
+html[data-reduce-motion='true'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  scroll-behavior: auto !important;
+  transition-duration: 0.01ms !important;
+}
+
+html[data-high-contrast='true'] body,
+html[data-high-contrast='true'] main,
+html[data-high-contrast='true'] header,
+html[data-high-contrast='true'] footer,
+html[data-high-contrast='true'] section,
+html[data-high-contrast='true'] article {
+  background-color: #000 !important;
+  color: #fff !important;
+}
+
+html[data-high-contrast='true'] p,
+html[data-high-contrast='true'] h1,
+html[data-high-contrast='true'] h2,
+html[data-high-contrast='true'] h3,
+html[data-high-contrast='true'] label,
+html[data-high-contrast='true'] span {
+  color: #fff !important;
+}
+
+html[data-high-contrast='true'] a,
+html[data-high-contrast='true'] button:not([class*='bg-t4u']) {
+  color: #ffcc33 !important;
+}
+
+html[data-high-contrast='true'] input,
+html[data-high-contrast='true'] textarea,
+html[data-high-contrast='true'] select {
+  border-color: #fff !important;
+  background-color: #000 !important;
+  color: #fff !important;
+}
