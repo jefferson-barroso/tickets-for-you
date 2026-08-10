@@ -80,6 +80,7 @@ public class SecurityConfig {
                                 HttpMethod.PATCH,
                                 "/api/v1/tickets/*/cancel"
                         ).hasRole("CLIENTE")
+                        .requestMatchers("/actuator/health").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(
