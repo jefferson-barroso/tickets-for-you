@@ -7,11 +7,14 @@ import {
     ShieldCheck,
     Ticket,
     UserRound,
+    SlidersHorizontal,
+    X,
 } from 'lucide-react'
 import { EventCard } from '../features/events/EventCard'
 import { usePublishedEvents } from '../features/events/usePublishedEvents'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../features/auth/AuthContext'
+import { useMemo, useState } from 'react'
 
 function HomePage() {
     const { user, logout } = useAuth()
@@ -22,6 +25,47 @@ function HomePage() {
         navigate('/')
     }
     const { events, isLoading, error } = usePublishedEvents()
+    const [searchQuery, setSearchQuery] = useState('')
+    const [eventTypeFilter, setEventTypeFilter] = useState('TODOS')
+    const [dateFilter, setDateFilter] = useState('')
+
+    const filteredEvents = useMemo(() => {
+        const normalizedQuery = searchQuery.trim().toLocaleLowerCase('pt-BR')
+
+        return events.filter((event) => {
+            const matchesSearch =
+                !normalizedQuery ||
+                event.title.toLocaleLowerCase('pt-BR').includes(normalizedQuery) ||
+                event.venueName.toLocaleLowerCase('pt-BR').includes(normalizedQuery) ||
+                event.venueAddress.toLocaleLowerCase('pt-BR').includes(normalizedQuery)
+
+            const matchesType =
+                eventTypeFilter === 'TODOS' ||
+                event.eventType === eventTypeFilter
+
+            const eventDate = new Intl.DateTimeFormat('en-CA', {
+                timeZone: 'America/Sao_Paulo',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+            }).format(new Date(event.startsAt))
+
+            const matchesDate = !dateFilter || eventDate === dateFilter
+
+            return matchesSearch && matchesType && matchesDate
+        })
+    }, [events, searchQuery, eventTypeFilter, dateFilter])
+
+    function clearFilters() {
+        setSearchQuery('')
+        setEventTypeFilter('TODOS')
+        setDateFilter('')
+    }
+
+    const hasActiveFilters =
+        searchQuery.trim() !== '' ||
+        eventTypeFilter !== 'TODOS' ||
+        dateFilter !== ''
     return (
         <div className="min-h-screen bg-stone-950 text-stone-100">
             <a
@@ -237,6 +281,93 @@ function HomePage() {
                         </p>
                     </div>
 
+                    <section
+                        aria-label="Filtros de eventos"
+                        className="mt-8 rounded-2xl border border-white/10 bg-stone-900 p-4 sm:p-5"
+                    >
+                        <div className="flex items-center gap-2">
+                            <SlidersHorizontal
+                                size={19}
+                                className="text-t4u-primary"
+                                aria-hidden="true"
+                            />
+                            <h3 className="font-black">Encontre seu evento</h3>
+                        </div>
+
+                        <div className="mt-4 grid gap-3 md:grid-cols-[1.5fr_0.75fr_0.75fr_auto]">
+                            <div className="relative">
+                                <label htmlFor="event-search" className="sr-only">
+                                    Buscar por evento ou local
+                                </label>
+                                <Search
+                                    size={18}
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 text-t4u-primary"
+                                    aria-hidden="true"
+                                    color='white'
+                                />
+                                <input
+                                    id="event-search"
+                                    type="search"
+                                    value={searchQuery}
+                                    onChange={(event) =>
+                                        setSearchQuery(event.target.value)
+                                    }
+                                    placeholder="Buscar evento ou local"
+                                    className="w-full rounded-xl border border-white/15 bg-stone-950 py-3 pl-11 pr-4 text-white outline-none placeholder:text-stone-500 focus:border-t4u-primary"
+                                />
+                            </div>
+
+                            <div>
+                                <label htmlFor="event-type" className="sr-only">
+                                    Tipo de evento
+                                </label>
+                                <select
+                                    id="event-type"
+                                    value={eventTypeFilter}
+                                    onChange={(event) =>
+                                        setEventTypeFilter(event.target.value)
+                                    }
+                                    className="w-full rounded-xl border border-white/15 bg-stone-950 px-4 py-3 text-white outline-none focus:border-t4u-primary"
+                                >
+                                    <option value="TODOS">Todos os tipos</option>
+                                    <option value="SHOW">Shows</option>
+                                    <option value="FILME">Cinema</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label htmlFor="event-date" className="sr-only">
+                                    Data do evento
+                                </label>
+                                <input
+                                    id="event-date"
+                                    type="date"
+                                    value={dateFilter}
+                                    onChange={(event) =>
+                                        setDateFilter(event.target.value)
+                                    }
+                                    className="w-full rounded-xl border border-white/15 bg-stone-950 px-4 py-3 text-white outline-none focus:border-t4u-primary [&::-webkit-calendar-picker-indicator]:invert" />
+                            </div>
+
+                            {hasActiveFilters && (
+                                <button
+                                    type="button"
+                                    onClick={clearFilters}
+                                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 px-4 py-3 text-sm font-bold text-stone-200 hover:border-t4u-primary hover:text-t4u-primary"
+                                >
+                                    <X size={17} aria-hidden="true" />
+                                    Limpar
+                                </button>
+                            )}
+                        </div>
+
+                        <p aria-live="polite" className="mt-4 text-sm text-stone-400">
+                            {filteredEvents.length === 1
+                                ? '1 evento encontrado'
+                                : `${filteredEvents.length} eventos encontrados`}
+                        </p>
+                    </section>
+
                     {isLoading && (
                         <p className="mt-10 text-stone-400" role="status">
                             Carregando eventos...
@@ -254,9 +385,26 @@ function HomePage() {
                             Nenhum evento publicado no momento.
                         </p>
                     )}
+                    {!isLoading &&
+                        !error &&
+                        events.length > 0 &&
+                        filteredEvents.length === 0 && (
+                            <div className="mt-10 rounded-2xl border border-dashed border-white/20 p-8 text-center">
+                                <p className="font-bold text-white">
+                                    Nenhum evento corresponde aos filtros.
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={clearFilters}
+                                    className="mt-3 font-bold text-t4u-primary hover:text-t4u-secondary"
+                                >
+                                    Limpar filtros
+                                </button>
+                            </div>
+                        )}
 
                     <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                        {events.map((event) => (
+                        {filteredEvents.map((event) => (
                             <EventCard key={event.id} event={event} />
                         ))}
                     </div>
