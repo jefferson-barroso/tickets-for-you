@@ -1,4 +1,4 @@
-import { CheckCircle2, CreditCard, LoaderCircle } from 'lucide-react'
+import { CheckCircle2, CreditCard, LoaderCircle, CircleX } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -10,7 +10,7 @@ export default function PaymentPage() {
     const [isPaying, setIsPaying] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
-    async function simulatePayment() {
+    async function simulatePayment(approved: boolean) {
         try {
             setIsPaying(true)
             setError(null)
@@ -18,16 +18,25 @@ export default function PaymentPage() {
             await apiFetch(`/reservations/${reservationId}/payment`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ approved: true }),
+                body: JSON.stringify({ approved }),
             })
-            toast.success('Pagamento aprovado! Seus ingressos foram emitidos.')
-            navigate('/tickets')
+
+            if (approved) {
+                toast.success('Pagamento aprovado! Seus ingressos foram emitidos.')
+                navigate('/tickets')
+                return
+            }
+
+            toast.error('Pagamento recusado na simulação. Nenhum ingresso foi emitido.')
+            navigate('/')
         } catch (error) {
-            setError(
+            const message =
                 error instanceof Error
                     ? error.message
-                    : 'Não foi possível processar o pagamento.',
-            )
+                    : 'Não foi possível processar o pagamento.'
+
+            setError(message)
+            toast.error(message)
         } finally {
             setIsPaying(false)
         }
@@ -54,9 +63,9 @@ export default function PaymentPage() {
 
                 <button
                     type="button"
-                    onClick={simulatePayment}
+                    onClick={() => simulatePayment(true)}
                     disabled={isPaying}
-                    className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-t4u-primary px-5 py-3 font-black text-stone-950 transition hover:bg-t4u-secondary disabled:cursor-not-allowed disabled:opacity-50"
+                    className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 font-black text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     {isPaying ? (
                         <>
@@ -67,6 +76,25 @@ export default function PaymentPage() {
                         <>
                             <CheckCircle2 aria-hidden="true" />
                             Simular pagamento aprovado
+                        </>
+                    )}
+                </button>
+
+                <button
+                    type="button"
+                    onClick={() => simulatePayment(false)}
+                    disabled={isPaying}
+                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 font-black text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    {isPaying ? (
+                        <>
+                            <LoaderCircle className="animate-spin" aria-hidden="true" />
+                            Processando...
+                        </>
+                    ) : (
+                        <>
+                            <CircleX aria-hidden="true" />
+                            Simular pagamento negado
                         </>
                     )}
                 </button>
