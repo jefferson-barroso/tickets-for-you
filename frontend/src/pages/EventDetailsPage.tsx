@@ -1,6 +1,7 @@
 import { ArrowLeft, CalendarDays, MapPin, Ticket } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
+import { toast } from 'sonner'
 
 import { apiFetch } from '../api/client'
 
@@ -70,7 +71,7 @@ export default function EventDetailsPage() {
     try {
       setIsReserving(true)
       setReservationError(null)
-
+      toast.success('Reserva criada. Finalize o pagamento para emitir seus ingressos.')
       const reservation = await apiFetch<{ id: string }>(
         '/reservations',
         {

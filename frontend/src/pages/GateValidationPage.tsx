@@ -9,6 +9,7 @@ import {
 import { FormEvent, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Scanner } from '@yudiel/react-qr-scanner'
+import { toast } from 'sonner'
 
 import { apiFetch } from '../api/client'
 
@@ -80,6 +81,11 @@ export default function GateValidationPage() {
       )
 
       setResult(response)
+      if (response.status === 'VALIDO') {
+        toast.success('Entrada autorizada e registrada.')
+      } else {
+        toast.error(response.message)
+      }
     } catch (error) {
       setError(
         error instanceof Error
@@ -233,8 +239,8 @@ export default function GateValidationPage() {
           <section
             aria-live="polite"
             className={`mt-6 rounded-3xl border p-6 ${isValid
-                ? 'border-emerald-400/40 bg-emerald-950/40'
-                : 'border-red-400/40 bg-red-950/40'
+              ? 'border-emerald-400/40 bg-emerald-950/40'
+              : 'border-red-400/40 bg-red-950/40'
               }`}
           >
             <div className="flex items-center gap-3">

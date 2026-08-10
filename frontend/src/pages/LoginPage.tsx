@@ -1,6 +1,7 @@
 import { LogIn, Ticket } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 
 import { useAuth } from '../features/auth/AuthContext'
 
@@ -20,6 +21,7 @@ export default function LoginPage() {
 
         try {
             await login(email, password)
+            toast.success('Login realizado com sucesso.')
             navigate('/')
         } catch {
             setError('E-mail ou senha inválidos.')

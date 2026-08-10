@@ -7,11 +7,13 @@ import {
     Ticket,
     TicketCheck,
     X,
+    Ban
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiFetch } from '../api/client'
 import { QRCodeSVG } from 'qrcode.react'
+import { toast } from 'sonner'
 
 type UserTicket = {
     id: string
@@ -32,6 +34,8 @@ export default function MyTicketsPage() {
     const [shareUrl, setShareUrl] = useState<string | null>(null)
     const [shareExpiresAt, setShareExpiresAt] = useState<string | null>(null)
     const [isSharing, setIsSharing] = useState(false)
+    const [isCancellingId, setIsCancellingId] = useState<string | null>(null)
+    const [actionError, setActionError] = useState<string | null>(null)
 
     useEffect(() => {
         async function loadTickets() {
@@ -64,6 +68,7 @@ export default function MyTicketsPage() {
 
             setShareUrl(response.url)
             setShareExpiresAt(response.expiresAt)
+            toast.success('Link temporário gerado com sucesso.')
         } catch (error) {
             setError(
                 error instanceof Error
@@ -79,6 +84,46 @@ export default function MyTicketsPage() {
         if (!shareUrl) return
 
         await navigator.clipboard.writeText(shareUrl)
+        toast.success('Link copiado para a área de transferência.')
+    }
+
+    async function cancelTicket(ticket: UserTicket) {
+        const confirmed = window.confirm(
+            `Deseja cancelar o ingresso para "${ticket.eventTitle}"?\n\nEssa ação devolverá uma unidade ao estoque e invalidará o QR Code. Caso o ingresso já tenha sido utilizado, ele não voltará ao estoque.`,
+        )
+
+        if (!confirmed) return
+
+        try {
+            setIsCancellingId(ticket.id)
+            setActionError(null)
+
+            const response = await apiFetch<UserTicket>(
+                `/tickets/${ticket.id}/cancel`,
+                { method: 'PATCH' },
+            )
+
+            setTickets((current) =>
+                current.map((currentTicket) =>
+                    currentTicket.id === response.id
+                        ? { ...currentTicket, ...response }
+                        : currentTicket,
+                ),
+            );
+            toast.success('Ingresso cancelado e unidade devolvida ao estoque.')
+
+        } catch (error) {
+            const errorMessage = error instanceof Error
+                ? error.message
+                : 'Não foi possível cancelar o ingresso.';
+
+            setActionError(errorMessage);
+
+            toast.error('Não foi possível cancelar o ingresso.');
+
+        } finally {
+            setIsCancellingId(null)
+        }
     }
 
     if (isLoading) {
@@ -114,6 +159,15 @@ export default function MyTicketsPage() {
                     >
                         {error}
                     </div>
+                )}
+
+                {actionError && (
+                    <p
+                        role="alert"
+                        className="mt-6 rounded-2xl border border-red-400/30 bg-red-950/40 p-5 text-red-100"
+                    >
+                        {actionError}
+                    </p>
                 )}
 
                 {!error && tickets.length === 0 && (
@@ -184,26 +238,42 @@ export default function MyTicketsPage() {
                                             {ticket.ticketCode}
                                         </code>
                                     </div>
-                                    <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => setSelectedTicket(ticket)}
-                                            className="inline-flex items-center justify-center gap-2 rounded-xl border border-t4u-primary px-4 py-3 font-black text-t4u-primary hover:bg-t4u-primary hover:text-stone-950"
-                                        >
-                                            <QrCode size={19} aria-hidden="true" />
-                                            Ver QR Code
-                                        </button>
+                                    {ticket.status === 'EMITIDO' ? (
+                                        <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                                            <button
+                                                type="button"
+                                                onClick={() => setSelectedTicket(ticket)}
+                                                className="inline-flex items-center justify-center gap-2 rounded-xl border border-t4u-primary px-4 py-3 font-black text-t4u-primary hover:bg-t4u-primary hover:text-stone-950"
+                                            >
+                                                <QrCode size={19} aria-hidden="true" />
+                                                Ver QR Code
+                                            </button>
 
-                                        <button
-                                            type="button"
-                                            onClick={() => generateShareLink(ticket.id)}
-                                            disabled={isSharing}
-                                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-t4u-primary px-4 py-3 font-black text-stone-950 hover:bg-t4u-secondary disabled:cursor-not-allowed disabled:opacity-50"
-                                        >
-                                            <Share2 size={19} aria-hidden="true" />
-                                            {isSharing ? 'Gerando...' : 'Compartilhar'}
-                                        </button>
-                                    </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => generateShareLink(ticket.id)}
+                                                disabled={isSharing}
+                                                className="inline-flex items-center justify-center gap-2 rounded-xl bg-t4u-primary px-4 py-3 font-black text-stone-950 hover:bg-t4u-secondary disabled:cursor-not-allowed disabled:opacity-50"
+                                            >
+                                                <Share2 size={19} aria-hidden="true" />
+                                                {isSharing ? 'Gerando...' : 'Compartilhar'}
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => cancelTicket(ticket)}
+                                                disabled={isCancellingId === ticket.id}
+                                                className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-400/60 px-4 py-3 font-black text-red-300 hover:bg-red-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                                            >
+                                                <Ban size={19} aria-hidden="true" />
+                                                {isCancellingId === ticket.id ? 'Cancelando...' : 'Cancelar'}
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <p className="mt-6 rounded-xl border border-red-400/30 bg-red-950/40 p-3 text-center text-sm font-bold text-red-200">
+                                            Este ingresso foi cancelado e não pode mais ser utilizado.
+                                        </p>
+                                    )}
 
                                 </div>
                             </article>
@@ -212,95 +282,95 @@ export default function MyTicketsPage() {
                 </div>
             </div>
             {selectedTicket && (
-  <div
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="qr-code-title"
-    className="fixed inset-0 z-50 grid place-items-center bg-black/75 p-6"
-  >
-    <section className="w-full max-w-sm rounded-3xl bg-stone-100 p-6 text-center text-stone-950">
-      <button
-        type="button"
-        onClick={() => setSelectedTicket(null)}
-        aria-label="Fechar QR Code"
-        className="ml-auto grid size-10 place-items-center rounded-lg hover:bg-stone-200"
-      >
-        <X aria-hidden="true" />
-      </button>
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="qr-code-title"
+                    className="fixed inset-0 z-50 grid place-items-center bg-black/75 p-6"
+                >
+                    <section className="w-full max-w-sm rounded-3xl bg-stone-100 p-6 text-center text-stone-950">
+                        <button
+                            type="button"
+                            onClick={() => setSelectedTicket(null)}
+                            aria-label="Fechar QR Code"
+                            className="ml-auto grid size-10 place-items-center rounded-lg hover:bg-stone-200"
+                        >
+                            <X aria-hidden="true" />
+                        </button>
 
-      <h2 id="qr-code-title" className="mt-2 text-2xl font-black">
-        Seu ingresso
-      </h2>
-      <p className="mt-2 text-sm text-stone-600">
-        Apresente este QR Code na entrada do evento.
-      </p>
+                        <h2 id="qr-code-title" className="mt-2 text-2xl font-black">
+                            Seu ingresso
+                        </h2>
+                        <p className="mt-2 text-sm text-stone-600">
+                            Apresente este QR Code na entrada do evento.
+                        </p>
 
-      <div className="mx-auto mt-6 w-fit rounded-2xl bg-white p-4">
-        <QRCodeSVG
-          value={selectedTicket.qrPayload ?? selectedTicket.ticketCode}
-          size={230}
-          level="M"
-          includeMargin
-        />
-      </div>
+                        <div className="mx-auto mt-6 w-fit rounded-2xl bg-white p-4">
+                            <QRCodeSVG
+                                value={selectedTicket.qrPayload ?? selectedTicket.ticketCode}
+                                size={230}
+                                level="M"
+                                includeMargin
+                            />
+                        </div>
 
-      <p className="mt-5 break-all font-mono text-xs text-stone-600">
-        {selectedTicket.ticketCode}
-      </p>
-    </section>
-  </div>
-)}
+                        <p className="mt-5 break-all font-mono text-xs text-stone-600">
+                            {selectedTicket.ticketCode}
+                        </p>
+                    </section>
+                </div>
+            )}
 
-{shareUrl && (
-  <div
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="share-link-title"
-    className="fixed inset-0 z-50 grid place-items-center bg-black/75 p-6"
-  >
-    <section className="w-full max-w-lg rounded-3xl bg-stone-100 p-6 text-stone-950">
-      <button
-        type="button"
-        onClick={() => setShareUrl(null)}
-        aria-label="Fechar compartilhamento"
-        className="ml-auto grid size-10 place-items-center rounded-lg hover:bg-stone-200"
-      >
-        <X aria-hidden="true" />
-      </button>
+            {shareUrl && (
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="share-link-title"
+                    className="fixed inset-0 z-50 grid place-items-center bg-black/75 p-6"
+                >
+                    <section className="w-full max-w-lg rounded-3xl bg-stone-100 p-6 text-stone-950">
+                        <button
+                            type="button"
+                            onClick={() => setShareUrl(null)}
+                            aria-label="Fechar compartilhamento"
+                            className="ml-auto grid size-10 place-items-center rounded-lg hover:bg-stone-200"
+                        >
+                            <X aria-hidden="true" />
+                        </button>
 
-      <h2 id="share-link-title" className="mt-2 text-2xl font-black">
-        Link para compartilhar
-      </h2>
+                        <h2 id="share-link-title" className="mt-2 text-2xl font-black">
+                            Link para compartilhar
+                        </h2>
 
-      <p className="mt-3 text-sm leading-6 text-stone-600">
-        Este link permite consultar o ingresso e expira em{' '}
-        {shareExpiresAt &&
-          new Intl.DateTimeFormat('pt-BR', {
-            dateStyle: 'medium',
-            timeStyle: 'short',
-          }).format(new Date(shareExpiresAt))}
-        .
-      </p>
+                        <p className="mt-3 text-sm leading-6 text-stone-600">
+                            Este link permite consultar o ingresso e expira em{' '}
+                            {shareExpiresAt &&
+                                new Intl.DateTimeFormat('pt-BR', {
+                                    dateStyle: 'medium',
+                                    timeStyle: 'short',
+                                }).format(new Date(shareExpiresAt))}
+                            .
+                        </p>
 
-      <div className="mt-6 flex gap-2">
-        <input
-          readOnly
-          value={shareUrl}
-          aria-label="Link temporário do ingresso"
-          className="min-w-0 flex-1 rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm"
-        />
-        <button
-          type="button"
-          onClick={copyShareLink}
-          className="inline-flex items-center gap-2 rounded-xl bg-t4u-primary px-4 py-3 font-black text-stone-950 hover:bg-t4u-secondary"
-        >
-          <Copy size={18} aria-hidden="true" />
-          Copiar
-        </button>
-      </div>
-    </section>
-  </div>
-)}
+                        <div className="mt-6 flex gap-2">
+                            <input
+                                readOnly
+                                value={shareUrl}
+                                aria-label="Link temporário do ingresso"
+                                className="min-w-0 flex-1 rounded-xl border border-stone-300 bg-white px-3 py-3 text-sm"
+                            />
+                            <button
+                                type="button"
+                                onClick={copyShareLink}
+                                className="inline-flex items-center gap-2 rounded-xl bg-t4u-primary px-4 py-3 font-black text-stone-950 hover:bg-t4u-secondary"
+                            >
+                                <Copy size={18} aria-hidden="true" />
+                                Copiar
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            )}
         </main>
     )
 }

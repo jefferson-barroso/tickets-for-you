@@ -8,6 +8,7 @@ import {
     Trash2,
 } from 'lucide-react'
 import { FormEvent, useRef, useState } from 'react'
+import { toast } from 'sonner'
 
 import { apiFetch } from '../api/client'
 import { Link } from 'react-router-dom'
@@ -177,6 +178,7 @@ export default function OrganizerPage() {
             })
 
             setCreatedEvent(response)
+            toast.success('Evento criado como rascunho.')
 
             requestAnimationFrame(() => {
                 eventFormRef.current?.scrollIntoView({
@@ -208,6 +210,7 @@ export default function OrganizerPage() {
             )
 
             setCreatedEvent(response)
+            toast.success('Evento publicado e disponível para venda.')
         } catch (error) {
             setError(
                 error instanceof Error
