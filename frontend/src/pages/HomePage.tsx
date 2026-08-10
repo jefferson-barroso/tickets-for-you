@@ -15,6 +15,7 @@ import { usePublishedEvents } from '../features/events/usePublishedEvents'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../features/auth/AuthContext'
 import { useMemo, useState } from 'react'
+import { FeaturedEventsCarousel } from '../features/events/FeaturedEventsCarousel'
 
 function HomePage() {
     const { user, logout } = useAuth()
@@ -89,25 +90,6 @@ function HomePage() {
                         />
                     </a>
 
-                    <nav aria-label="Navegação principal" className="hidden md:block">
-                        <ul className="flex items-center gap-7 text-sm font-medium text-stone-300">
-                            <li>
-                                <a className="transition hover:text-t4u-primary" href="#eventos">
-                                    Eventos
-                                </a>
-                            </li>
-                            <li>
-                                <a className="transition hover:text-t4u-primary" href="#como-funciona">
-                                    Como funciona
-                                </a>
-                            </li>
-                            <li>
-                                <a className="transition hover:text-t4u-primary" href="#seguranca">
-                                    Segurança
-                                </a>
-                            </li>
-                        </ul>
-                    </nav>
 
                     {user ? (
                         <div className="flex items-center gap-3">
@@ -168,8 +150,7 @@ function HomePage() {
                     <div className="relative mx-auto grid max-w-7xl gap-12 px-6 py-20 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:py-28">
                         <div>
                             <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-t4u-primary/30 bg-t4u-primary/10 px-4 py-2 text-sm font-medium text-t4u-secondary">
-                                <Ticket size={17} aria-hidden="true" />
-                                Seu próximo momento começa aqui
+                                Seu próximo momento começa aqui!
                             </p>
 
                             <h1 className="max-w-3xl text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl">
@@ -199,33 +180,9 @@ function HomePage() {
                                 </a>
                             </div>
                         </div>
+                        <div>
+                            <FeaturedEventsCarousel events={events.slice(0, 5)} />
 
-                        <div className="rounded-3xl border border-t4u-primary/30 bg-gradient-to-br from-t4u-primary via-[#ffb94a] to-t4u-secondary p-8 text-stone-950 shadow-2xl shadow-black/30">
-                            <div className="flex items-center justify-between border-b border-stone-950/15 pb-5">
-                                <span className="font-black tracking-[0.2em]">T4U PASS</span>
-                                <Ticket size={26} aria-hidden="true" />
-                            </div>
-
-                            <p className="mt-10 text-sm font-semibold uppercase tracking-[0.2em] text-stone-700">
-                                Experiências ao vivo
-                            </p>
-
-                            <p className="mt-2 text-3xl font-black leading-tight">
-                                O seu ingresso.
-                                <br />
-                                Do seu jeito.
-                            </p>
-
-                            <div className="mt-12 grid grid-cols-2 gap-4 text-sm">
-                                <div>
-                                    <p className="text-stone-700">Reserva segura</p>
-                                    <p className="mt-1 font-bold">Estoque protegido</p>
-                                </div>
-                                <div>
-                                    <p className="text-stone-700">Entrada rápida</p>
-                                    <p className="mt-1 font-bold">QR Code validado</p>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </section>
@@ -233,36 +190,40 @@ function HomePage() {
                 <section id="como-funciona" className="bg-stone-900/70 py-20">
                     <div className="mx-auto max-w-7xl px-6">
                         <div className="max-w-2xl">
-                            <p className="font-semibold text-t4u-primary">SIMPLIFICAMOS A JORNADA</p>
+                            <p className="font-semibold text-t4u-primary">SIMPLIFICAMOS A JORNADA, ENTENDA:</p>
                             <h2 className="mt-3 text-3xl font-black text-white">
                                 Da descoberta à entrada, sem complicação.
                             </h2>
                         </div>
 
                         <div className="mt-10 grid gap-5 md:grid-cols-3">
-                            <article className="rounded-2xl border border-white/10 bg-stone-950 p-6">
-                                <Search className="text-t4u-primary" aria-hidden="true" />
-                                <h3 className="mt-5 text-xl font-bold">Descubra</h3>
-                                <p className="mt-2 leading-7 text-stone-400">
-                                    Encontre eventos, confira local, data, setores e valores.
-                                </p>
-                            </article>
-
-                            <article className="rounded-2xl border border-white/10 bg-stone-950 p-6">
-                                <CalendarDays className="text-t4u-primary" aria-hidden="true" />
-                                <h3 className="mt-5 text-xl font-bold">Reserve</h3>
-                                <p className="mt-2 leading-7 text-stone-400">
-                                    Selecione seus ingressos com estoque atualizado e pagamento simulado.
-                                </p>
-                            </article>
-
-                            <article id="seguranca" className="rounded-2xl border border-white/10 bg-stone-950 p-6">
-                                <ShieldCheck className="text-t4u-primary" aria-hidden="true" />
-                                <h3 className="mt-5 text-xl font-bold">Aproveite</h3>
-                                <p className="mt-2 leading-7 text-stone-400">
-                                    Acesse seu ingresso digital e entre com QR Code seguro.
-                                </p>
-                            </article>
+                            <a href="#eventos">
+                                <article className="rounded-2xl border border-white/10 bg-stone-950 p-6 transform transition duration-300 hover:scale-105">
+                                    <Search className="text-t4u-primary" aria-hidden="true" />
+                                    <h3 className="mt-5 text-xl font-bold">Descubra</h3>
+                                    <p className="mt-2 leading-7 text-stone-400">
+                                        Encontre eventos, confira local, data, setores e valores.
+                                    </p>
+                                </article>
+                            </a>
+                            <a href="#eventos">
+                                <article className="rounded-2xl border border-white/10 bg-stone-950 p-6 transform transition duration-300 hover:scale-105">
+                                    <CalendarDays className="text-t4u-primary" aria-hidden="true" />
+                                    <h3 className="mt-5 text-xl font-bold">Reserve</h3>
+                                    <p className="mt-2 leading-7 text-stone-400">
+                                        Selecione seus ingressos com estoque atualizado e pagamento simulado.
+                                    </p>
+                                </article>
+                            </a>
+                            <a href="#eventos">
+                                <article id="seguranca" className="rounded-2xl border border-white/10 bg-stone-950 p-6 transform transition duration-300 hover:scale-105">
+                                    <ShieldCheck className="text-t4u-primary" aria-hidden="true" />
+                                    <h3 className="mt-5 text-xl font-bold">Aproveite</h3>
+                                    <p className="mt-2 leading-7 text-stone-400">
+                                        Acesse seu ingresso digital e entre com QR Code seguro.
+                                    </p>
+                                </article>
+                            </a>
                         </div>
                     </div>
                 </section>
