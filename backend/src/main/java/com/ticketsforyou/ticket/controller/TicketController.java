@@ -14,9 +14,8 @@ import com.ticketsforyou.ticket.dto.TicketShareLinkResponse;
 import com.ticketsforyou.ticket.service.TicketShareService;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-
+import org.springframework.web.bind.annotation.PatchMapping;
 import java.util.UUID;
-
 import java.util.List;
 
 @RestController
@@ -54,5 +53,17 @@ public class TicketController {
             @PathVariable String token
     ) {
         return ticketShareService.getSharedTicket(token);
+    }
+
+    @PatchMapping("/{ticketId}/cancel")
+    @Operation(summary = "Cancela um ingresso emitido e devolve uma unidade ao estoque")
+    public MyTicketResponse cancelTicket(
+            @PathVariable UUID ticketId,
+            Authentication authentication
+    ) {
+        return ticketService.cancelTicket(
+                ticketId,
+                authentication.getName()
+        );
     }
 }

@@ -38,5 +38,20 @@ public interface TicketRepository extends JpaRepository<Ticket, UUID> {
             @Param("ticketCode") UUID ticketCode
     );
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+    SELECT ticket
+    FROM Ticket ticket
+    JOIN FETCH ticket.event
+    JOIN FETCH ticket.reservationItem reservationItem
+    JOIN FETCH reservationItem.ticketType
+    WHERE ticket.id = :ticketId
+      AND ticket.customer.email = :customerEmail
+    """)
+    Optional<Ticket> findByIdAndCustomerEmailForUpdate(
+            @Param("ticketId") UUID ticketId,
+            @Param("customerEmail") String customerEmail
+    );
+
     Optional<Ticket> findByIdAndCustomerEmail(UUID id, String customerEmail);
 }

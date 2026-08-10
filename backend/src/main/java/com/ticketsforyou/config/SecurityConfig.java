@@ -76,6 +76,10 @@ public class SecurityConfig {
                                 HttpMethod.GET,
                                 "/api/v1/catalog/**"
                         ).hasRole("ORGANIZADOR")
+                        .requestMatchers(
+                                HttpMethod.PATCH,
+                                "/api/v1/tickets/*/cancel"
+                        ).hasRole("CLIENTE")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(
