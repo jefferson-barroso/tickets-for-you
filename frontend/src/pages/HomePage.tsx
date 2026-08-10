@@ -5,7 +5,6 @@ import {
     ScanLine,
     Search,
     ShieldCheck,
-    Ticket,
     UserRound,
     SlidersHorizontal,
     X,
