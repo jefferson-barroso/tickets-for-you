@@ -1,4 +1,4 @@
-Caros(as) recrutadores(as), é com prazer que apresento:
+
 ![Logo T4U](./frontend/public/logo.png)
 # TicketsForYou (T4U)
 Plataforma de eventos e venda de ingressos desenvolvida para o Desafio Elite Dev 2026.
@@ -285,4 +285,3 @@ A interface utiliza a seguinte paleta de cores principal:
 VITE_API_URL=http://localhost:8080/api/v1
 ```
 ---
-#### PS: Visando a organização e o atendimento dos demais requisitos solicitados, deixo, dentro da pasta `/docs`, outros arquivos que explicam com detalhes: o fluxo da api, a arquitetura e as decisões tomadas para a construção deste desafio.
